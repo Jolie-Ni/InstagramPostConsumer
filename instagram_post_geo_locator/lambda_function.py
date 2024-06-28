@@ -57,23 +57,16 @@ def get_openai_api_key():
             SecretId=secret_name
         )
     except ClientError as e:
-        if e.response['Error']['Code'] == 'ResourceNotFoundException':
-            print("The requested secret " + secret_name + " was not found")
-        elif e.response['Error']['Code'] == 'InvalidRequestException':
-            print("The request was invalid due to:", e)
-        elif e.response['Error']['Code'] == 'InvalidParameterException':
-            print("The request had invalid params:", e)
-        elif e.response['Error']['Code'] == 'DecryptionFailure':
-            print("The requested secret can't be decrypted using the provided KMS key:", e)
-        elif e.response['Error']['Code'] == 'InternalServiceError':
-            print("An error occurred on service side:", e)
-    else:
-        # Secrets Manager decrypts the secret value using the associated KMS CMK
-        # Depending on whether the secret was a string or binary, only one of these fields will be populated
-        text_secret_data = get_secret_value_response['SecretString']
-        return text_secret_data
+        # For a list of exceptions thrown, see
+        # https://docs.aws.amazon.com/secretsmanager/latest/apireference/API_GetSecretValue.html
+        raise e
+
+    secret = get_secret_value_response['SecretString']
+    print("openai API_KEY: " + secret);
+    return json.loads(secret)["OPENAI_API_KEY"]
         
 def get_openai_client():
+    
     return OpenAI(
         api_key = get_openai_api_key()
     )
@@ -85,20 +78,27 @@ def extract_all_http_links(text):
 def get_google_map_urls(caption): 
     # info from caption
     # if not available in caption, ignore
+    
     openai_client = get_openai_client()
     chatgpt_response = openai_client.chat.completions.create(
         messages=[
             {
                 "role": "user",
-                "content": "extract geo location information from the below paragraph and give me back a pin on google map, you only need to return me a google map link." + "\"" + caption + "\""
+                "content": 'extract geo location information from the below paragraph and give me back a pin on google map, you only need to return me a google map link.' + '"' + str(caption) + '"'
             }
         ],
         model="gpt-3.5-turbo"
     )
+    print(chatgpt_response)
+    #response_text = chatgpt_response["choices"][0]["message"]["content"]
+    #print(response_text)
+    #print("response: " + response_text)
 
     # parse out link
 
-    return extract_all_http_links(chatgpt_response)
+    #return extract_all_http_links(response_text)
+    return ""
+    
 
 def lambda_handler(event, context):
     L = import_session(get_cookiefile(), "randaway_travel")
