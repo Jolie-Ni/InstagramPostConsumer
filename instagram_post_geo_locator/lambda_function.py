@@ -84,7 +84,7 @@ def get_google_map_urls(caption):
         messages=[
             {
                 "role": "user",
-                "content": 'extract geo location information from the below paragraph and give me back a pin on google map, you only need to return me a google map link.' + '"' + str(caption) + '"'
+                "content": 'extract geo location information from the below paragraph and give me back a pin on google map, you only need to return me a google map link.' + '"' + caption + '"'
             }
         ],
         model="gpt-3.5-turbo"
@@ -110,8 +110,8 @@ def lambda_handler(event, context):
         shortCode = bodyJson["shortCode"]
         print("sender: " + bodyJson["sender"] + ", shortCode: " + shortCode)
         post = Post.from_shortcode(L.context, shortCode)
-        caption = print(post.caption)
-        urls = get_google_map_urls(caption)
+        print(post.caption)
+        urls = get_google_map_urls(post.caption)
         print("google map url: " + urls)
     print(event)
 
