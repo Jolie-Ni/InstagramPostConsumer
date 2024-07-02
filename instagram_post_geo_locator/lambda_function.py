@@ -71,11 +71,21 @@ def get_openai_client():
         api_key = get_openai_api_key()
     )
         
-def extract_all_http_links(text):
-    pattern = r'https?://[^\s<>"]+|www\.[^\s<>"]+'
-    return re.findall(pattern, text)
+def extract_an_address(text):
+    pattern = r'<Address: (.*?)>'
+    match = re.search(pattern, text)
+    if match:
+        return match.group(1)
+    return ""
 
-def get_google_map_urls(caption): 
+def extract_name(text):
+    pattern = r'\[Name: (.*?)\]'
+    match = re.search(pattern, text)
+    if match:
+        return match.group(1)
+    return ""
+
+def get_address(caption): 
     # info from caption
     # if not available in caption, ignore
     
@@ -84,20 +94,31 @@ def get_google_map_urls(caption):
         messages=[
             {
                 "role": "user",
-                "content": 'extract geo location information from the below paragraph and give me back a pin on google map, you only need to return me a google map link.' + '"' + caption + '"'
+                "content": 'extract geo location information from the below paragraph and give me back an address that is searable in google map. Give me the address enclosed in <> and name of this place in []. Give me response strictly follow the pattern: <Address: >, [Name: ] ' + '"' + caption + '"'
             }
         ],
-        model="gpt-3.5-turbo"
+        model="gpt-4o"
     )
     print(chatgpt_response)
-    #response_text = chatgpt_response["choices"][0]["message"]["content"]
-    #print(response_text)
-    #print("response: " + response_text)
+    response_text = chatgpt_response.choices[0].message.content
+    print("response: " + response_text)
 
     # parse out link
 
-    #return extract_all_http_links(response_text)
-    return ""
+    return extract_an_address(response_text), extract_name(response_text)
+
+def write_to_DB(requestId, sender, shortCode, address, businessName):
+    dynamodb = boto3.client('dynamodb')
+    dynamodb.put_item(
+        TableName='instagram_message',
+        Item={
+            'aws_request_id': {'S': requestId },
+            'instagram_id': {'S': sender},
+            'shortCode': {'S': shortCode},
+            'address': {'S': address},
+            'name': {'S': businessName}
+        }
+    )
     
 
 def lambda_handler(event, context):
@@ -111,8 +132,12 @@ def lambda_handler(event, context):
         print("sender: " + bodyJson["sender"] + ", shortCode: " + shortCode)
         post = Post.from_shortcode(L.context, shortCode)
         print(post.caption)
-        urls = get_google_map_urls(post.caption)
-        print("google map url: " + urls)
+        address, businessName = get_address(post.caption)
+        print("google map url: " + address)
+        print("businessName: " + businessName)
+        # save to dynamoDB
+        write_to_DB(bodyJson["requestId"], bodyJson["sender"], shortCode, address, businessName);
+
     print(event)
 
 # post location currently unavailable due to a bug: 
