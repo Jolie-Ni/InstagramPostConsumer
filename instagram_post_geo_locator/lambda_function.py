@@ -1,3 +1,5 @@
+from dataclasses import asdict, dataclass
+import time
 from instaloader import Instaloader, Post
 import os
 from glob import glob
@@ -10,6 +12,7 @@ import boto3
 from botocore.exceptions import ClientError
 from openai import OpenAI
 import re
+import requests
 
 def get_cookiefile():
     cookiePath = os.environ['LAMBDA_TASK_ROOT'] + "/cookies.sqlite"
@@ -41,9 +44,8 @@ def import_session(cookiefile, sessionfile):
     print("username:" + username)
     L.save_session_to_file(sessionfile)
     return L
-    
-def get_openai_api_key(): 
-    secret_name = "OPENAI_API_KEY"
+
+def get_api_key( secret_name): 
     region_name = "us-east-1"
 
     session = boto3.session.Session()
@@ -62,13 +64,13 @@ def get_openai_api_key():
         raise e
 
     secret = get_secret_value_response['SecretString']
-    print("openai API_KEY: " + secret);
-    return json.loads(secret)["OPENAI_API_KEY"]
-        
+    print(f"{secret_name}: {secret}")
+    return json.loads(secret)[secret_name]
+
 def get_openai_client():
-    
+    open_ai_secret_name = "OPENAI_API_KEY"
     return OpenAI(
-        api_key = get_openai_api_key()
+        api_key = get_api_key(open_ai_secret_name)
     )
         
 def extract_an_address(text):
@@ -86,6 +88,7 @@ def extract_name(text):
     return ""
 
 def get_address(caption): 
+
     # info from caption
     # if not available in caption, ignore
 
@@ -116,17 +119,90 @@ def get_address(caption):
 
     return extract_an_address(response_text), extract_name(response_text)
 
-def write_to_DB(requestId, sender, shortCode, address, businessName):
+def name_and_address_matched(name_lng_lat, address_lng_lat) -> bool: 
+    if abs(name_lng_lat.lat - address_lng_lat.lat)< 0.001 and abs(name_lng_lat.lng - address_lng_lat.lng) < 0.001:
+        return True
+    else:
+        return False
+    
+@dataclass
+class Location:
+    lng: float
+    lat: float
+
+@dataclass
+class ValidAddress:
+    address: str
+    location: Location 
+
+def cross_verify_address(business_name, business_address) -> ValidAddress:
+    google_geocoding_api = "https://maps.googleapis.com/maps/api/geocode/"
+    output_format = "json"
+    google_api_key = get_api_key("GOOGLE_API_KEY")
+    # call google geocoding API
+    response1 = requests.get(f"{google_geocoding_api}{output_format}?address={business_name}&key={google_api_key}")
+
+    response2 = requests.get(f"{google_geocoding_api}{output_format}?address={business_address}&key={google_api_key}")
+
+    if response1.status_code != 200:
+        print("No address found for: " + business_name)
+        return None
+
+    if response2.status_code != 200:
+        print("No address found for: " + business_address)
+        return None
+
+    if response1.status_code == 200 and response2.status_code == 200:
+        # get long + lat for both address and name
+        responseJson = response1.json()
+        print(responseJson)
+        if responseJson['status'] != 'OK':
+            print("No address found for: " + business_name)
+            return None
+        # assume one result comes back for mvp
+        data_from_name = responseJson['results'][0]
+        location_from_name = Location(data_from_name['geometry']['location']['lng'], data_from_name['geometry']['location']['lat']) 
+        responseJson = response2.json()
+        if responseJson['status'] != 'OK':
+            print("No address found for: " + business_address)
+            return None
+        data_from_address = responseJson['results'][0]
+        location_from_address = Location(data_from_address['geometry']['location']['lng'], data_from_address['geometry']['location']['lat'])
+        if (name_and_address_matched(location_from_name, location_from_address)):
+            # if match, store to DB
+            return ValidAddress(data_from_name['formatted_address'], location_from_name)
+        else:
+            return None
+        
+def clean_item_by_remove_None_fields(item): 
+    return {k: v for k, v in item.items() if v is not None}        
+
+def write_to_DB(requestId, sender, shortCode, businessName, verifiedAddress):
     dynamodb = boto3.client('dynamodb')
+    businessAddress = verifiedAddress.address if verifiedAddress is not None else None
+    businessLocation = asdict(verifiedAddress.location) if verifiedAddress is not None else None
+
+    item = {
+        'aws_request_id': {'S': requestId},
+        'instagram_id': {'S': sender},
+        'shortCode': {'S': shortCode},
+        'businessName': {'S': businessName},
+        'isValid': {'BOOL': verifiedAddress != None},
+    }
+    
+    if businessAddress is not None: 
+        item['businessAddress'] = {'S': businessAddress}
+    if businessLocation is not None:    
+        item['location'] = {'M': {
+            'lng': {'N': str(businessLocation['lng'])},  # Must convert float to string and wrap in 'N'
+            'lat': {'N': str(businessLocation['lat'])}    # Must convert float to string and wrap in 'N'
+        }}
+        
+    item['createdAt'] = {'N': str(int(time.time()))}
+
     dynamodb.put_item(
         TableName='instagram_message',
-        Item={
-            'aws_request_id': {'S': requestId },
-            'instagram_id': {'S': sender},
-            'shortCode': {'S': shortCode},
-            'address': {'S': address},
-            'name': {'S': businessName}
-        }
+        Item=item
     )
     
 
@@ -144,13 +220,21 @@ def lambda_handler(event, context):
         address, businessName = get_address(post.caption)
         print("google map url: " + address)
         print("businessName: " + businessName)
-        # save to dynamoDB
-        write_to_DB(bodyJson["requestId"], bodyJson["sender"], shortCode, address, businessName);
+        verified_address = cross_verify_address(business_name=businessName, business_address=address)
+        write_to_DB(bodyJson["requestId"], bodyJson["sender"], shortCode, businessName , verified_address)
 
     print(event)
 
 # post location currently unavailable due to a bug: 
 # https://github.com/instaloader/instaloader/issues/2215
+
+# shortCode = "C8JvMSzSxqb"
+# businessName = "紅鶴(BENITSURU)"
+# businessAddress = "東京都台東区西浅草２丁目１−１１"
+# verified_address = cross_verify_address(businessName, businessAddress)
+# print(verified_address)
+# write_to_DB("4f933487-2870-491c-bf15-a6c707ef914f","795372785581410", shortCode, businessName, verified_address)
+
 '''
 post_location = post.location
 if (post_location) :
