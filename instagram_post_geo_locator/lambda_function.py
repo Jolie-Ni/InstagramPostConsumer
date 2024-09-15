@@ -98,6 +98,10 @@ def get_address(caption):
                 "content": "you are an expert in reading text in different languages and parse out location information + business name from the text"
             },
             {
+                "role": "assistant",
+                "content": "Yes, I can help with parsing text in different languages to extract location information and business names. If you provide the text you want analyzed, I can assist in identifying these details for you. How can I assist you with this task?"
+            },
+            {
                 "role": "user",
                 "content": 'extract geo location information from the below paragraph and give me back an address that is searable in google map. Give me the address enclosed in <> and name of this place in []. Give me response strictly follow the pattern: <Address: >, [Name: ] ' + '"' + caption + '"'
             }
