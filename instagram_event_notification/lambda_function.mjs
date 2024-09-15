@@ -56,12 +56,12 @@ export const handler = async (event, context) => {
     */
     
     // extract post shortcode
-    const regex = /\/p\/([^\/?]+)/;
+    const regex = /https:\/\/www\.instagram\.com\/(p|reel)\/([^\/]+)/ ;
     const match = postUrl.match(regex);
     let shortCode
 
     if (match) {
-      shortCode = match[1]
+      shortCode = match[2]
       console.log(shortCode)
       const messageBody = {
         "requestId": context.awsRequestId,

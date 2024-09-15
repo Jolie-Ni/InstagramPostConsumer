@@ -1,0 +1,18 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Description: SAM for instagram_post_analyzer
+
+Resources:
+  InstagramPostAnalyzer:
+    Type: AWS::Serverless::Function
+    Properties: 
+      FunctionName: instagram_post_analyzer
+      Handler: lambda_function.lambda_handler           # Match the handler name from Lambda
+      Runtime: python3.11                   # Match the runtime
+      CodeUri: ./                           # Specify where the code is located (e.g., local path or S3)
+      MemorySize: 128                       # Match the memory size
+      Timeout: 10                           # Match the timeout
+      Role: arn:aws:iam::310780496713:role/randaway_dev_debug  # Match the IAM role used by the Lambda function
+      Layers:
+        - arn:aws:lambda:us-east-1:310780496713:layer:instagram_analyzer_denpendency:11
+      

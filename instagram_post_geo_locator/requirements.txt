@@ -1,0 +1,2 @@
+openai==1.35.7
+instaloader==4.11

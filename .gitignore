@@ -1,3 +1,6 @@
 #credential files
 instagram_post_geo_locator/cookies.sqlite
 instagram_post_geo_locator/randaway_travel
+
+#sam
+.aws-sam/
