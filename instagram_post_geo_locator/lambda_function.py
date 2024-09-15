@@ -183,8 +183,8 @@ def write_to_DB(requestId, sender, shortCode, businessName, verifiedAddress):
     businessLocation = asdict(verifiedAddress.location) if verifiedAddress is not None else None
 
     item = {
-        'aws_request_id': {'S': requestId},
         'instagram_id': {'S': sender},
+        'request_id': {'S': requestId},
         'shortCode': {'S': shortCode},
         'businessName': {'S': businessName},
         'isValid': {'BOOL': verifiedAddress != None},
@@ -201,7 +201,7 @@ def write_to_DB(requestId, sender, shortCode, businessName, verifiedAddress):
     item['createdAt'] = {'N': str(int(time.time()))}
 
     dynamodb.put_item(
-        TableName='instagram_message',
+        TableName='instagram_locations',
         Item=item
     )
     
