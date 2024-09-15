@@ -88,10 +88,15 @@ def extract_name(text):
 def get_address(caption): 
     # info from caption
     # if not available in caption, ignore
+
+    prompt_text = 'extract geo location information from the below paragraph and give me back an address that is searable in google map. Give me the address enclosed in <> and name of this place in []. Give me response strictly follow the pattern: <Address: >, [Name: ] ' + '"' + caption + '"'
     
     openai_client = get_openai_client()
     chatgpt_response = openai_client.chat.completions.create(
         messages=[
+            {   "role": "system",
+                "content": "you are an expert in reading text in different languages and parse out location information + business name from the text"
+            },
             {
                 "role": "user",
                 "content": 'extract geo location information from the below paragraph and give me back an address that is searable in google map. Give me the address enclosed in <> and name of this place in []. Give me response strictly follow the pattern: <Address: >, [Name: ] ' + '"' + caption + '"'
