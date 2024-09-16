@@ -193,7 +193,7 @@ def write_to_DB(requestId, sender, shortCode, businessName, verifiedAddress):
     if businessAddress is not None: 
         item['businessAddress'] = {'S': businessAddress}
     if businessLocation is not None:    
-        item['location'] = {'M': {
+        item['businessLocation'] = {'M': {
             'lng': {'N': str(businessLocation['lng'])},  # Must convert float to string and wrap in 'N'
             'lat': {'N': str(businessLocation['lat'])}    # Must convert float to string and wrap in 'N'
         }}
