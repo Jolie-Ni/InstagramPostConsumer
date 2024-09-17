@@ -142,14 +142,25 @@ def cross_verify_address(business_name, business_address) -> ValidAddress:
     # call google geocoding API
     response1 = requests.get(f"{google_geocoding_api}{output_format}?address={business_name}&key={google_api_key}")
 
+    if business_name and not business_address:
+        responseJson = response1.json()
+        print(responseJson)
+        if responseJson['status'] != 'OK':
+            print("No address found for: " + business_name)
+            return None
+        # assume one result comes back for mvp
+        data_from_name = responseJson['results'][0]
+        location_from_name = Location(data_from_name['geometry']['location']['lng'], data_from_name['geometry']['location']['lat'])
+        return ValidAddress(data_from_name['formatted_address'], location_from_name)
+
     response2 = requests.get(f"{google_geocoding_api}{output_format}?address={business_address}&key={google_api_key}")
 
     if response1.status_code != 200:
-        print("No address found for: " + business_name)
+        print("Fetch address for: " + business_name + " failed")
         return None
-
+    
     if response2.status_code != 200:
-        print("No address found for: " + business_address)
+        print("Fetch address found for: " + business_address + " failed")
         return None
 
     if response1.status_code == 200 and response2.status_code == 200:
