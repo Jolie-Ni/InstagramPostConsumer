@@ -93,15 +93,17 @@ def get_address(caption):
     # if not available in caption, ignore
     
     openai_client = get_openai_client()
-    sample_response = "<Address: address1>, [Name: name1]" + "\n" + "<Address: address2>, [Name: name2]"
     chatgpt_response = openai_client.chat.completions.create(
         messages=[
             {   "role": "system",
-                "content": "you are an expert in reading text in different languages and parse out one or multiple locations' information + business name from the text. Give me response strictly follow the pattern: <Address: >, [Name: ]. Make sure to separate each Address Name pair with a new line." + "If there is no business location or name information in the content, just put down N/A and N/A under those fields"
+                "content": "you are an expert in reading text in different languages and parse out one or multiple locations' information + business name from the text. Give me response strictly follow the pattern: <Address: >, [Name: ]." +  
+                "Make sure to separate each Address Name pair with a new line." +
+                "If there is no business location or name information in the content, just put down N/A and N/A under those fields." +
+                "If you can't tell if this is an address or a name, always put it under name field"
             },
             {
                 "role": "assistant",
-                "content": "Sure! You can provide the text, and I'll parse the information according to your pattern: <Address: >, [Name: ]. For any missing information, I'll use N/A. Let me know the text you'd like me to work on!"
+                "content": "Understood! Please provide the text you'd like me to process, and I'll parse out the locations and business names accordingly."
             },
             {
                 "role": "user",
@@ -237,7 +239,7 @@ def lambda_handler(event, context):
 
 
 caption = '''
-Save this 7D Osaka and West Kansai Itinerary for your next visit to Japan! 🗼
+"Save this 7D Osaka and West Kansai Itinerary for your next visit to Japan! 🗼
 
 Our trip to Osaka and West Kansai was everything we dreamed about - we played with Mario, fed some deers, had mouth-watering local cuisines and explored the city in kimonos. Here's everything we did in our 7 days:
 
@@ -273,7 +275,7 @@ Day 7: Kyoto
 ⁠
 📍Click our link in bio to check out the full article!
 
-Share your favourite travel photos with #thetravelintern to be featured!
+Share your favourite travel photos with #thetravelintern to be featured!"
 '''
 address, businessName = get_address(caption)
 print(address)
