@@ -242,45 +242,45 @@ def lambda_handler(event, context):
     print(event)
 
 
-caption = '''
-"Save this 7D Osaka and West Kansai Itinerary for your next visit to Japan! 🗼
+# caption = '''
+# "Save this 7D Osaka and West Kansai Itinerary for your next visit to Japan! 🗼
 
-Our trip to Osaka and West Kansai was everything we dreamed about - we played with Mario, fed some deers, had mouth-watering local cuisines and explored the city in kimonos. Here's everything we did in our 7 days:
+# Our trip to Osaka and West Kansai was everything we dreamed about - we played with Mario, fed some deers, had mouth-watering local cuisines and explored the city in kimonos. Here's everything we did in our 7 days:
 
-Day 1: Osaka
-- Walk around Shinsaibashi-Suji Shopping Street or Den Den Town
-- Dinner at Dotonbori Street
+# Day 1: Osaka
+# - Walk around Shinsaibashi-Suji Shopping Street or Den Den Town
+# - Dinner at Dotonbori Street
 
-Day 2: Osaka
-- Explore Osaka Castle
-- Immerse yourself at teamLab Botanical Garden Osaka 
+# Day 2: Osaka
+# - Explore Osaka Castle
+# - Immerse yourself at teamLab Botanical Garden Osaka 
 
-Day 3: Universal Studios Japan
-- Geek out at Super Nintendo World
-- Cast a spell at The Wizarding World of Harry Potter
+# Day 3: Universal Studios Japan
+# - Geek out at Super Nintendo World
+# - Cast a spell at The Wizarding World of Harry Potter
 
-Day 4: Nara
-- Feed deers at Nara park
+# Day 4: Nara
+# - Feed deers at Nara park
 
-Day 5: Okayama, Kurashiki and Kobe
-- Walk along the famous Kurashiki Canal
-- Stroll in the Korakuen Garden
-- Feast on Kobe beef
+# Day 5: Okayama, Kurashiki and Kobe
+# - Walk along the famous Kurashiki Canal
+# - Stroll in the Korakuen Garden
+# - Feast on Kobe beef
 
-Day 6: Kyoto
-- Explore the city in a kimono
-- Count the number of Torii gates at Fushimi Inari shrine
+# Day 6: Kyoto
+# - Explore the city in a kimono
+# - Count the number of Torii gates at Fushimi Inari shrine
 
-Day 7: Kyoto
-- Explore the Arashiyama bamboo forest
-- Feast at Nishiki market
+# Day 7: Kyoto
+# - Explore the Arashiyama bamboo forest
+# - Feast at Nishiki market
 
-📸: @eel_nadnerb @tee_nie
-⁠
-📍Click our link in bio to check out the full article!
+# 📸: @eel_nadnerb @tee_nie
+# ⁠
+# 📍Click our link in bio to check out the full article!
 
-Share your favourite travel photos with #thetravelintern to be featured!"
-'''
+# Share your favourite travel photos with #thetravelintern to be featured!"
+# '''
 # addresses, businessNames = get_address(caption)
 # if len(addresses) != len(businessNames):
 #     print("Error: Addresses and Name length mismatched")
