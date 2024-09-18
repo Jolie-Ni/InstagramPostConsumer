@@ -91,22 +91,21 @@ def get_address(caption):
 
     # info from caption
     # if not available in caption, ignore
-
-    prompt_text = 'extract geo location information from the below paragraph and give me back an address that is searable in google map. Give me the address enclosed in <> and name of this place in []. Give me response strictly follow the pattern: <Address: >, [Name: ] ' + '"' + caption + '"'
     
     openai_client = get_openai_client()
+    sample_response = "<Address: address1>, [Name: name1]" + "\n" + "<Address: address2>, [Name: name2]"
     chatgpt_response = openai_client.chat.completions.create(
         messages=[
             {   "role": "system",
-                "content": "you are an expert in reading text in different languages and parse out location information + business name from the text"
+                "content": "you are an expert in reading text in different languages and parse out one or multiple locations' information + business name from the text. Give me response strictly follow the pattern: <Address: >, [Name: ]. Make sure to separate each Address Name pair with a new line." + "If there is no business location or name information in the content, just put down N/A and N/A under those fields"
             },
             {
                 "role": "assistant",
-                "content": "Yes, I can help with parsing text in different languages to extract location information and business names. If you provide the text you want analyzed, I can assist in identifying these details for you. How can I assist you with this task?"
+                "content": "Sure! You can provide the text, and I'll parse the information according to your pattern: <Address: >, [Name: ]. For any missing information, I'll use N/A. Let me know the text you'd like me to work on!"
             },
             {
                 "role": "user",
-                "content": 'extract geo location information from the below paragraph and give me back an address that is searable in google map. Give me the address enclosed in <> and name of this place in []. Give me response strictly follow the pattern: <Address: >, [Name: ] ' + '"' + caption + '"'
+                "content": '"' + caption + '"'
             }
         ],
         model="gpt-4o"
@@ -236,15 +235,50 @@ def lambda_handler(event, context):
 
     print(event)
 
-# post location currently unavailable due to a bug: 
-# https://github.com/instaloader/instaloader/issues/2215
 
-# shortCode = "C8JvMSzSxqb"
-# businessName = "紅鶴(BENITSURU)"
-# businessAddress = "東京都台東区西浅草２丁目１−１１"
-# verified_address = cross_verify_address(businessName, businessAddress)
-# print(verified_address)
-# write_to_DB("4f933487-2870-491c-bf15-a6c707ef914f","795372785581410", shortCode, businessName, verified_address)
+caption = '''
+Save this 7D Osaka and West Kansai Itinerary for your next visit to Japan! 🗼
+
+Our trip to Osaka and West Kansai was everything we dreamed about - we played with Mario, fed some deers, had mouth-watering local cuisines and explored the city in kimonos. Here's everything we did in our 7 days:
+
+Day 1: Osaka
+- Walk around Shinsaibashi-Suji Shopping Street or Den Den Town
+- Dinner at Dotonbori Street
+
+Day 2: Osaka
+- Explore Osaka Castle
+- Immerse yourself at teamLab Botanical Garden Osaka 
+
+Day 3: Universal Studios Japan
+- Geek out at Super Nintendo World
+- Cast a spell at The Wizarding World of Harry Potter
+
+Day 4: Nara
+- Feed deers at Nara park
+
+Day 5: Okayama, Kurashiki and Kobe
+- Walk along the famous Kurashiki Canal
+- Stroll in the Korakuen Garden
+- Feast on Kobe beef
+
+Day 6: Kyoto
+- Explore the city in a kimono
+- Count the number of Torii gates at Fushimi Inari shrine
+
+Day 7: Kyoto
+- Explore the Arashiyama bamboo forest
+- Feast at Nishiki market
+
+📸: @eel_nadnerb @tee_nie
+⁠
+📍Click our link in bio to check out the full article!
+
+Share your favourite travel photos with #thetravelintern to be featured!
+'''
+address, businessName = get_address(caption)
+print(address)
+print(businessName)
+
 
 '''
 post_location = post.location

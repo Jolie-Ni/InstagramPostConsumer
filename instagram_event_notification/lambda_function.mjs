@@ -1,10 +1,6 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import {
   DynamoDBDocumentClient,
-  ScanCommand,
-  PutCommand,
-  GetCommand,
-  DeleteCommand,
 } from "@aws-sdk/lib-dynamodb";
 
 import { SQSClient, SendMessageCommand } from "@aws-sdk/client-sqs";
