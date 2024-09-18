@@ -73,19 +73,21 @@ def get_openai_client():
         api_key = get_api_key(open_ai_secret_name)
     )
         
-def extract_an_address(text):
+def extract_addresses(text):
     pattern = r'<Address: (.*?)>'
-    match = re.search(pattern, text)
+    match = re.findall(pattern, text)
     if match:
-        return match.group(1)
-    return ""
+        return match
+    else:
+        return []
 
-def extract_name(text):
+def extract_names(text):
     pattern = r'\[Name: (.*?)\]'
-    match = re.search(pattern, text)
+    match = re.findall(pattern, text)
     if match:
-        return match.group(1)
-    return ""
+        return match
+    else:
+        return []
 
 def get_address(caption): 
 
@@ -118,7 +120,7 @@ def get_address(caption):
 
     # parse out link
 
-    return extract_an_address(response_text), extract_name(response_text)
+    return extract_addresses(response_text), extract_names(response_text)
 
 def name_and_address_matched(name_lng_lat, address_lng_lat) -> bool: 
     if abs(name_lng_lat.lat - address_lng_lat.lat)< 0.001 and abs(name_lng_lat.lng - address_lng_lat.lng) < 0.001:
@@ -229,11 +231,13 @@ def lambda_handler(event, context):
         print("sender: " + bodyJson["sender"] + ", shortCode: " + shortCode)
         post = Post.from_shortcode(L.context, shortCode)
         print(post.caption)
-        address, businessName = get_address(post.caption)
-        print("google map url: " + address)
-        print("businessName: " + businessName)
-        verified_address = cross_verify_address(business_name=businessName, business_address=address)
-        write_to_DB(bodyJson["requestId"], bodyJson["sender"], shortCode, businessName , verified_address)
+        addresses, businessNames = get_address(post.caption)
+        if addresses.length != businessNames.length:
+            print("Error: Addresses and Name length mismatched")
+        else:
+            for i in range(len(addresses)):
+                verified_address = cross_verify_address(business_name=businessNames[i], business_address=addresses[i])
+                write_to_DB(bodyJson["requestId"], bodyJson["sender"], shortCode, businessNames[i] , verified_address)
 
     print(event)
 
@@ -277,9 +281,13 @@ Day 7: Kyoto
 
 Share your favourite travel photos with #thetravelintern to be featured!"
 '''
-address, businessName = get_address(caption)
-print(address)
-print(businessName)
+# addresses, businessNames = get_address(caption)
+# if len(addresses) != len(businessNames):
+#     print("Error: Addresses and Name length mismatched")
+# else:    
+#     for i in range(len(addresses)):
+#         verified_address = cross_verify_address(business_name=businessNames[i], business_address=addresses[i])
+#         write_to_DB(f'test{i}', f'test{i}', "test", businessNames[i] , verified_address)
 
 
 '''
@@ -294,3 +302,5 @@ if (post_location) :
     print("caption:" + post.caption)
     print("comments count: " + str(post.comments))
 '''
+
+
