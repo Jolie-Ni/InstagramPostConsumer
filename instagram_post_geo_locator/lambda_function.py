@@ -98,8 +98,8 @@ def get_address(caption):
             {   "role": "system",
                 "content": "you are an expert in reading text in different languages and parse out one or multiple locations' information + business name from the text. Give me response strictly follow the pattern: <Address: >, [Name: ]." +  
                 "Make sure to separate each Address Name pair with a new line." +
-                "If there is no business location or name information in the content, just put down N/A and N/A under those fields." +
-                "If you can't tell if this is an address or a name, always put it under name field"
+                "For each location, if there is no business name found but address is given. Just put the same content in both address and name" +
+                "If neither is found, put N/A in both"
             },
             {
                 "role": "assistant",
