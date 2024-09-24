@@ -232,12 +232,12 @@ def lambda_handler(event, context):
         post = Post.from_shortcode(L.context, shortCode)
         print(post.caption)
         addresses, businessNames = get_address(post.caption)
-        if addresses.length != businessNames.length:
+        if len(addresses) != len(businessNames):
             print("Error: Addresses and Name length mismatched")
         else:
             for i in range(len(addresses)):
                 verified_address = cross_verify_address(business_name=businessNames[i], business_address=addresses[i])
-                write_to_DB(bodyJson["requestId"], bodyJson["sender"], shortCode, businessNames[i] , verified_address)
+                write_to_DB(bodyJson["requestId"] + ':' + str(i), bodyJson["sender"], shortCode, businessNames[i] , verified_address)
 
     print(event)
 
