@@ -1,11 +1,5 @@
 from dataclasses import asdict, dataclass
 import time
-from instaloader import Instaloader, Post
-import os
-from glob import glob
-from os.path import expanduser
-from platform import system
-from sqlite3 import OperationalError, connect
 import shutil
 import json
 import boto3
@@ -37,7 +31,8 @@ def get_api_key(secret_name):
 
 def get_caption_from_media_id(media_id):
     instagram_access_token = get_api_key("INSTAGRAM_GRAPH_API")
-    instagram_graph_api = "https://graph.instagram.com/v20.0/" + media_id + "?fields=caption&access_token" + instagram_access_token
+    instagram_graph_api = "https://graph.instagram.com/v20.0/" + media_id + "?fields=caption&access_token=" + instagram_access_token
+    print(instagram_graph_api)
     response = requests.get(instagram_graph_api)
 
     if response.status_code == 200:
@@ -70,5 +65,7 @@ def lambda_handler(event, context):
             "sender": sender,
             "caption": caption
         }
-
+        
+        print("sending message" + json.dumps(message_body))
         sqs.sendMessage(queue_url, json.dump(message_body))
+        
