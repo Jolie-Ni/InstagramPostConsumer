@@ -78,13 +78,13 @@ def get_address(caption):
     print("response: " + response_text)
 
     # parse out link
-
     return extract_addresses(response_text), extract_names(response_text)
 
 
 def lambda_handler(event, context):
     records = event["Records"]
     queue_url = "https://sqs.us-east-1.amazonaws.com/310780496713/google_map_decoding_api.fifo"
+    sqs = boto3.client('sqs')
     for record in records:
         body = record["body"]
         print(body)
@@ -106,6 +106,6 @@ def lambda_handler(event, context):
                             "businessAddresses": addresses
                         }
             
-            sqs.sendMessage(messageBody)
+            sqs.sendMessage(queue_url, json.dumps(messageBody))
 
     print(event)
