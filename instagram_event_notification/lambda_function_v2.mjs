@@ -69,7 +69,7 @@ export const handler = async (event, context) => {
       // response with "To use our tool, please share a post or reel containing locations you are interested in with us".
       return {
         statusCode: 200,
-        body: `Post shortcode: ${shortCode}`,
+        body: JSON.stringify(event),
       };
     }
 
@@ -82,6 +82,7 @@ export const handler = async (event, context) => {
 
     try {
       await sqsClient.send(new SendMessageCommand(messageParams));
+      console.log("sending to SQS" + JSON.stringify(messageParams));
     } catch (error) {
       throw error;
     }
