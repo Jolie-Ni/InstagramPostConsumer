@@ -1,6 +1,3 @@
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
-
 import { SQSClient, SendMessageCommand } from "@aws-sdk/client-sqs";
 
 const sqsClient = new SQSClient({ region: "us-east-1" });
@@ -8,6 +5,19 @@ const instagram_graph_api_queue =
   "https://sqs.us-east-1.amazonaws.com/310780496713/get_post_from_media_id.fifo";
 const open_ai_queue_url =
   "https://sqs.us-east-1.amazonaws.com/310780496713/openai_api.fifo";
+
+const getMediaIdFromUrl = (url) => {
+  // sample url: https://lookaside.fbsbx.com/ig_messaging_cdn/?asset_id=18275099551246187&signature=AbwHAkucILuUY3fW1SCuR51rhevAWXn8HuIFrOciab1XBc0lu-LE7BiPFgzbx3Pf2cM23YfRfW5cp4bUPvLTwJ_1fjkCtrzUwZYCGqd7e1McwpbvadU5bhxZaZ7QXgyVsVb1PJqWjofYno90ygQ7zhXFyXsgRSTkYLgvn4mRZ68tyWjTpl1QXcsZfpdYC0zyLaBmd5d-aHMdOcSNl8j_YfYwMBJfUi48
+  const regex = /asset_id=([\d]+)/;
+
+  const match = url.match(regex);
+
+  if (match && match[1]) {
+    return match[1];
+  } else {
+    return "";
+  }
+};
 
 export const handler = async (event, context) => {
   console.log(`Webhook event received`);
@@ -40,6 +50,13 @@ export const handler = async (event, context) => {
       // send to instagram_graph_api_queue
       let media_url = attachment["payload"]["url"];
       let media_id = getMediaIdFromUrl(media_url);
+      if (media_id == "") {
+        console.log("couldn't find media_id, dropping this event");
+        return {
+          statusCode: 200,
+          body: JSON.stringify(event),
+        };
+      }
 
       messageBody = {
         mid: mid,
