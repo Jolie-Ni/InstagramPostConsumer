@@ -99,8 +99,8 @@ def write_to_DB(sender, mid, businessName, verifiedAddress):
     businessLocation = asdict(verifiedAddress.location) if verifiedAddress is not None else None
 
     item = {
+        'message_id': {'S': mid},
         'instagram_id': {'S': sender},
-        'mid': {'S': mid},
         'businessName': {'S': businessName},
         'isValid': {'BOOL': verifiedAddress != None},
     }
@@ -121,6 +121,10 @@ def write_to_DB(sender, mid, businessName, verifiedAddress):
     )
 
 
+# need to update the table we are writing to
+# need a new table to construct db structure
+# partition key: sender
+# sort key: mid
 def lambda_handler(event, context):
     print(event)
     records = event["Records"]
