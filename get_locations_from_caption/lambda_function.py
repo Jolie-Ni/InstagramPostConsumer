@@ -108,4 +108,4 @@ def lambda_handler(event, context):
                         }
             
             print("sending message" + json.dumps(messageBody))
-            sqs.sendMessage(queue_url, json.dumps(messageBody))
+            sqs.send_message(QueueUrl=queue_url,MessageBody=json.dumps(messageBody),MessageGroupId=sender)
