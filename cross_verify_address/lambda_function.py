@@ -38,7 +38,7 @@ def get_api_key( secret_name):
     return json.loads(secret)[secret_name]
 
 def name_and_address_matched(name_lng_lat, address_lng_lat) -> bool: 
-    if abs(name_lng_lat.lat - address_lng_lat.lat)< 0.001 and abs(name_lng_lat.lng - address_lng_lat.lng) < 0.001:
+    if abs(name_lng_lat.lat - address_lng_lat.lat)< 0.01 and abs(name_lng_lat.lng - address_lng_lat.lng) < 0.01:
         return True
     else:
         return False
@@ -115,7 +115,10 @@ def write_to_DB(sender, mid, businessName, verifiedAddress):
         
     item['createdAt'] = {'N': str(int(time.time()))}
     
-    if businessAddress is not None or businessLocation is not None:
+    if (businessAddress is None) and (businessLocation is None):
+        print("Both address and name are empty, drop this event")
+    else:
+        print("send to db: " + json.dumps(item))
         dynamodb.put_item(
             TableName='instagram_locations_v2',
             Item=item
@@ -141,6 +144,5 @@ def lambda_handler(event, context):
         for i in range(len(businessAddresses)):
             verified_address = cross_verify_address(business_name=businessNames[i], business_address=businessAddresses[i])
             print("writing to db")
-            print("sender: " + sender + ", mid: " + mid + ", businessName: " + businessNames[i] + ", businessAddress: " + businessAddresses[i])
             write_to_DB(sender, mid, businessNames[i] , verified_address)
 
