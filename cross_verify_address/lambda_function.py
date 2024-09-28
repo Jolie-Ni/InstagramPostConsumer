@@ -114,11 +114,12 @@ def write_to_DB(sender, mid, businessName, verifiedAddress):
         }}
         
     item['createdAt'] = {'N': str(int(time.time()))}
-
-    dynamodb.put_item(
-        TableName='instagram_locations',
-        Item=item
-    )
+    
+    if businessAddress is not None or businessLocation is not None:
+        dynamodb.put_item(
+            TableName='instagram_locations_v2',
+            Item=item
+        )
 
 
 # need to update the table we are writing to
@@ -134,12 +135,12 @@ def lambda_handler(event, context):
         bodyJson = json.loads(body)
         businessAddresses = bodyJson["businessAddresses"]
         businessNames = bodyJson["businessNames"]
-        sender = bodyJson["body"]
+        sender = bodyJson["sender"]
         mid = bodyJson["mid"]
-        print("sender: " + bodyJson["sender"])
-        
 
         for i in range(len(businessAddresses)):
             verified_address = cross_verify_address(business_name=businessNames[i], business_address=businessAddresses[i])
+            print("writing to db")
+            print("sender: " + sender + ", mid: " + mid + ", businessName: " + businessNames[i] + ", businessAddress: " + businessAddresses[i])
             write_to_DB(sender, mid, businessNames[i] , verified_address)
 
