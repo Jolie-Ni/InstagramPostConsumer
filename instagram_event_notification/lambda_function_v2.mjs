@@ -77,7 +77,6 @@ export const handler = async (event, context) => {
       MessageGroupId: sender,
       MessageBody: JSON.stringify(messageBody),
       QueueUrl: queueUrl,
-      MessageDeduplicationId: mid,
     };
 
     try {
