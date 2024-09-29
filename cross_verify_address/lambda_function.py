@@ -133,7 +133,7 @@ def lambda_handler(event, context):
     print(event)
     records = event["Records"]
     sqs = boto3.client('sqs')
-    queue_url=""
+    queue_url="https://sqs.us-east-1.amazonaws.com/310780496713/google_map_decoding_api.fifo"
     for record in records:
         body = record["body"]
         print(body)
