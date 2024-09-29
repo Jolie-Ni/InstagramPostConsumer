@@ -132,6 +132,8 @@ def write_to_DB(sender, mid, businessName, verifiedAddress):
 def lambda_handler(event, context):
     print(event)
     records = event["Records"]
+    sqs = boto3.client('sqs')
+    queue_url=""
     for record in records:
         body = record["body"]
         print(body)
@@ -145,4 +147,9 @@ def lambda_handler(event, context):
             verified_address = cross_verify_address(business_name=businessNames[i], business_address=businessAddresses[i])
             print("writing to db")
             write_to_DB(sender, mid, businessNames[i] , verified_address)
+            # get google map link
+            message_body = {
+                
+            }
+            sqs.send_message(MessageGroupId=sender, QueueUrl=queue_url, MessageBody=message_body)
 
