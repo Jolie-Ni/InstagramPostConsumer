@@ -6,12 +6,12 @@ def lambda_handler(event, context):
         body = record["body"]
         print(body)
         bodyJson = json.loads(body)
-        businessAddresses = bodyJson["businessAddresses"]
-        businessNames = bodyJson["businessNames"]
-        sender = bodyJson["sender"]
-        mid = bodyJson["mid"]
+        placeIds = bodyJson["placeIds"]
+        for placeId in placeIds:
+            # return templates
 
-        for i in range(len(businessAddresses)):
-            verified_address = cross_verify_address(business_name=businessNames[i], business_address=businessAddresses[i])
-            print("writing to db")
-            write_to_DB(sender, mid, businessNames[i] , verified_address)
+
+
+# each place is a separate card and can be added to google map separately
+# solve the app redirect issue
+# find out ways to add places to google map at once
