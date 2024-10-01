@@ -23,7 +23,7 @@ def lambda_handler(event, context):
 
 '''
 curl -X POST "https://graph.instagram.com/v20.0/17841463038230063/messages" \
--H "Authorization: Bearer IGQWRQdkVybFpjLXdRSzRFSGUyMDJ0SkVQYnFKTUptSkRLYllaQjVhN1NnckZAabHVvRldLUTZAPVVZACeTJpemMxMVNvMDRlNzRPbEFXSURyOXc3WWY0RTZAkSjFXNE43bGFHRXlsTmttY0k2WHpKZAUlIZAHZAhRFR4RlkZD" \
+-H "Authorization: Bearer" \
 -H "Content-Type: application/json" \
 -d '{
   "recipient": {
