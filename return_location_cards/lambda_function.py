@@ -15,7 +15,8 @@ def lambda_handler(event, context):
             # get place reservation link
 
 
-
+# https://developers.google.com/maps/documentation/places/web-service/op-overview#place_details_api
+# place details API
 # each place is a separate card and can be added to google map separately
 # solve the app redirect issue
 # find out ways to add places to google map at once
