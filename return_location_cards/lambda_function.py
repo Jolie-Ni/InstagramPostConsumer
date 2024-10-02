@@ -57,7 +57,6 @@ def lambda_handler(event, context):
             }
             requests.post(SEND_MESSAGE_URL, headers=headers, json=data)
 
-
 # https://developers.google.com/maps/documentation/places/web-service/op-overview#place_details_api
 # place details API
 # each place is a separate card and can be added to google map separately
