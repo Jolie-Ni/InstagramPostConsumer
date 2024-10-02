@@ -9,6 +9,7 @@ def lambda_handler(event, context):
         placeIds = bodyJson["placeIds"]
         for placeId in placeIds:
             # return templates
+            # maybe return link for now, no need for templates
 
             # each place get place URL
             # get place first photo
