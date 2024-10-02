@@ -12,6 +12,7 @@ class Location:
 
 @dataclass
 class ValidAddress:
+    placeId: str
     address: str
     location: Location 
 
@@ -59,7 +60,7 @@ def cross_verify_address(business_name, business_address) -> ValidAddress:
         # assume one result comes back for mvp
         data_from_name = responseJson['results'][0]
         location_from_name = Location(data_from_name['geometry']['location']['lng'], data_from_name['geometry']['location']['lat'])
-        return ValidAddress(data_from_name['formatted_address'], location_from_name)
+        return ValidAddress(data_from_name["place_id"], data_from_name['formatted_address'], location_from_name)
 
     response2 = requests.get(f"{google_geocoding_api}{output_format}?address={business_address}&key={google_api_key}")
 
@@ -97,10 +98,12 @@ def write_to_DB(sender, mid, businessName, verifiedAddress):
     dynamodb = boto3.client('dynamodb')
     businessAddress = verifiedAddress.address if verifiedAddress is not None else None
     businessLocation = asdict(verifiedAddress.location) if verifiedAddress is not None else None
+    placeId = verifiedAddress.placeId if verifiedAddress is not None else None
 
     item = {
         'message_id': {'S': mid},
         'instagram_id': {'S': sender},
+        'place_id': {'S': placeId},
         'businessName': {'S': businessName},
         'isValid': {'BOOL': verifiedAddress != None},
     }
@@ -143,13 +146,19 @@ def lambda_handler(event, context):
         sender = bodyJson["sender"]
         mid = bodyJson["mid"]
 
+        placeIds = []
         for i in range(len(businessAddresses)):
             verified_address = cross_verify_address(business_name=businessNames[i], business_address=businessAddresses[i])
             print("writing to db")
             write_to_DB(sender, mid, businessNames[i] , verified_address)
-            # get google map link
+            if (verified_address):
+                placeIds.append[verified_address.placeId]
+
+        if len(placeIds) != 0:
             message_body = {
-                
+              "sender": sender,
+              "placeIds": placeIds
             }
-            sqs.send_message(MessageGroupId=sender, QueueUrl=queue_url, MessageBody=message_body)
+            sqs.send_message(MessageGroupId=sender, QueueUrl=queue_url, MessageBody=message_body)       
+            
 
