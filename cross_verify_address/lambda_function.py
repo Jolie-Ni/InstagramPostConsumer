@@ -90,7 +90,7 @@ def cross_verify_address(business_name, business_address) -> ValidAddress:
         location_from_address = Location(data_from_address['geometry']['location']['lng'], data_from_address['geometry']['location']['lat'])
         if (name_and_address_matched(location_from_name, location_from_address)):
             # if match, store to DB
-            return ValidAddress(data_from_name['formatted_address'], location_from_name)
+            return ValidAddress(data_from_name["place_id"], data_from_name['formatted_address'], location_from_name)
         else:
             return None
         
@@ -147,19 +147,18 @@ def lambda_handler(event, context):
         mid = bodyJson["mid"]
 
         placeIds = []
-        names = []
         for i in range(len(businessAddresses)):
             verified_address = cross_verify_address(business_name=businessNames[i], business_address=businessAddresses[i])
             print("writing to db")
             write_to_DB(sender, mid, businessNames[i] , verified_address)
             if (verified_address):
-                placeIds.append[verified_address.placeId]
-                names.append
+                placeIds.append(verified_address.placeId)
+
         if len(placeIds) != 0:
             message_body = {
               "sender": sender,
               "placeIds": placeIds
             }
-            sqs.send_message(MessageGroupId=sender, QueueUrl=queue_url, MessageBody=message_body)       
+            sqs.send_message(MessageGroupId=sender, QueueUrl=queue_url, MessageBody=json.dumps(message_body))       
             
 
