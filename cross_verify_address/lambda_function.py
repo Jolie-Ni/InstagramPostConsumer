@@ -147,13 +147,14 @@ def lambda_handler(event, context):
         mid = bodyJson["mid"]
 
         placeIds = []
+        names = []
         for i in range(len(businessAddresses)):
             verified_address = cross_verify_address(business_name=businessNames[i], business_address=businessAddresses[i])
             print("writing to db")
             write_to_DB(sender, mid, businessNames[i] , verified_address)
             if (verified_address):
                 placeIds.append[verified_address.placeId]
-
+                names.append
         if len(placeIds) != 0:
             message_body = {
               "sender": sender,

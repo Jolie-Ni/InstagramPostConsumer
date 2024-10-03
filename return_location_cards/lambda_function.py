@@ -4,7 +4,7 @@ import boto3
 from botocore.exceptions import ClientError
 
 def get_message_url(sender: str) -> str:
-  return f'https://graph.instagram.com/v20.0/${sender}/messages'
+  return f'https://graph.instagram.com/v20.0/{sender}/messages'
 
 def get_api_key(secret_name): 
     region_name = "us-east-1"
@@ -55,7 +55,8 @@ def lambda_handler(event, context):
                 "text": "https://maps.app.goo.gl/" + placeId
               }
             }
-            requests.post(SEND_MESSAGE_URL, headers=headers, json=data)
+            res = requests.post(SEND_MESSAGE_URL, headers=headers, json=data)
+            print(res.json())
 
 # https://developers.google.com/maps/documentation/places/web-service/op-overview#place_details_api
 # place details API
