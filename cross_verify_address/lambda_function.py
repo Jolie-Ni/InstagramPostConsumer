@@ -14,7 +14,7 @@ class Location:
 class ValidAddress:
     placeId: str
     address: str
-    location: Location 
+    location: Location
 
 def get_api_key( secret_name): 
     region_name = "us-east-1"
@@ -147,16 +147,21 @@ def lambda_handler(event, context):
         mid = bodyJson["mid"]
 
         placeIds = []
+        bAddresses = []
         for i in range(len(businessAddresses)):
             verified_address = cross_verify_address(business_name=businessNames[i], business_address=businessAddresses[i])
             print("writing to db")
             write_to_DB(sender, mid, businessNames[i] , verified_address)
             if (verified_address):
                 placeIds.append(verified_address.placeId)
+                bAddresses.append(verified_address.address)
 
         if len(placeIds) != 0:
             message_body = {
               "sender": sender,
+              # adding this to avoid sqs treating it as duplicate message
+              "mid": mid,
+              "businessAddresses": bAddresses,
               "placeIds": placeIds
             }
             sqs.send_message(MessageGroupId=sender, QueueUrl=queue_url, MessageBody=json.dumps(message_body))       

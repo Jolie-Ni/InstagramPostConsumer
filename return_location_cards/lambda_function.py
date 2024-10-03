@@ -2,6 +2,7 @@ import requests
 import json
 import boto3
 from botocore.exceptions import ClientError
+import urllib.parse
 
 def get_message_url(sender: str) -> str:
   return f'https://graph.instagram.com/v20.0/{sender}/messages'
@@ -38,6 +39,7 @@ def lambda_handler(event, context):
     }
     randawayInstaId = "17841463038230063"
     SEND_MESSAGE_URL = get_message_url(randawayInstaId)
+    GOOGLE_URL_PREFIX = "https://www.google.com/maps/search/?api=1&"
 
     for record in records:
         body = record["body"]
@@ -45,14 +47,16 @@ def lambda_handler(event, context):
         bodyJson = json.loads(body)
         placeIds = bodyJson["placeIds"]
         sender = bodyJson["sender"]
+        businessAddresses = bodyJson["businessAddresses"]
 
-        for placeId in placeIds:
+        for i in range(len(placeIds)):
+            placeQuery = "query=" + urllib.parse.quote(businessAddresses[i]) + "&query_place_id=" + placeIds[i]
             data = {
                 "recipient": {
                 "id": sender
               },
               "message": {
-                "text": "https://maps.app.goo.gl/" + placeId
+                "text": GOOGLE_URL_PREFIX + placeQuery
               }
             }
             res = requests.post(SEND_MESSAGE_URL, headers=headers, json=data)
