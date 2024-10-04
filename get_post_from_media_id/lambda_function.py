@@ -7,6 +7,10 @@ from botocore.exceptions import ClientError
 import re
 import requests
 
+# introduce redis cache
+# key: post shortcode
+# value: List<PlaceId>
+
 def get_api_key(secret_name): 
     region_name = "us-east-1"
 
