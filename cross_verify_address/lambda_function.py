@@ -49,50 +49,76 @@ def cross_verify_address(business_name, business_address) -> ValidAddress:
     output_format = "json"
     google_api_key = get_api_key("GOOGLE_API_KEY")
     # call google geocoding API
-    response1 = requests.get(f"{google_geocoding_api}{output_format}?address={business_name}&key={google_api_key}")
+    nameResponse = requests.get(f"{google_geocoding_api}{output_format}?address={business_name}&key={google_api_key}")
+    addressResponse = requests.get(f"{google_geocoding_api}{output_format}?address={business_address}&key={google_api_key}")
 
-    if business_name and not business_address:
-        responseJson = response1.json()
-        print(responseJson)
-        if responseJson['status'] != 'OK':
-            print("No address found for: " + business_name)
+    result = None
+    # if one response came back empty or having more than 1, use the other
+    if nameResponse.status_code == 200 and addressResponse.status_code == 200:
+        # look at actual results
+        nameResponseJson = nameResponse.json()
+        addressResponseJson = addressResponse.json()
+        if nameResponseJson["status"] == 'OK' and addressResponseJson["status"] == 'OK':
+            data_from_name = nameResponseJson["results"]
+            data_from_address = addressResponseJson["results"]
+            if len(data_from_name) != 0 and len(data_from_address) != 0:
+                if len(data_from_name) == 1 and len(data_from_address) == 1:
+                    location_from_name = Location(data_from_name['geometry']['location']['lng'], data_from_name['geometry']['location']['lat']) 
+                    location_from_address = Location(data_from_address['geometry']['location']['lng'], data_from_address['geometry']['location']['lat'])
+                    if (name_and_address_matched(location_from_name, location_from_address)):
+                      # if match, store to DB
+                      print("LOG::Name and address goecoding matched")
+                      return ValidAddress(data_from_name["place_id"], data_from_name['formatted_address'], location_from_name)
+                    else:
+                      print("LOG::Name and address geocoding mismatch")
+                      return None
+                elif len(data_from_name) == 1:
+                    result = nameResponse
+                    print("LOG::Found unique name geocoding and non-unique address geo-coding, use Name")
+                elif len(data_from_address) == 1:
+                    result = addressResponse
+                    print("LOG::Found unique address geocoding and non-unique name geo-coding, use Address")
+                else:
+                    print("LOG::Both geocoding requests came back non unique")
+                    return None            
+            elif len(data_from_name) != 0:
+                    result = nameResponse
+                    print("LOG::Find non-empty name geocoding, empty address geocoding, use Name")
+            elif len(data_from_address) != 0:
+                    result = addressResponse
+                    print("LOG::Find non-empty address geocoding, empty name geocoding, use Address")
+            else:
+                print("LOG::Both geocoding requests results came back empty")
+                return None         
+        elif nameResponseJson["status"] == 'OK':
+            result = nameResponse
+            print("LOG::Only name geocoding request status = OK, use Name")
+        elif addressResponseJson["status"] == 'OK':
+            result = addressResponse
+            print("LOG::Only address geocoding request status = OK, use Address")
+        else:
+            print("LOG::Neither request status, name geocoding and address geocoding, came back as OK")
             return None
-        # assume one result comes back for mvp
-        data_from_name = responseJson['results'][0]
-        location_from_name = Location(data_from_name['geometry']['location']['lng'], data_from_name['geometry']['location']['lat'])
-        return ValidAddress(data_from_name["place_id"], data_from_name['formatted_address'], location_from_name)
-
-    response2 = requests.get(f"{google_geocoding_api}{output_format}?address={business_address}&key={google_api_key}")
-
-    if response1.status_code != 200:
-        print("Fetch address for: " + business_name + " failed")
+    elif addressResponse.status_code == 200:
+        result = addressResponse
+        print("LOG::Only address geocoding request suceed, use Address")
+    elif nameResponse.status_code == 200:    
+        result = nameResponse
+        print("LOG::Only name geocoding request suceed, use Name")
+    else:
+        print("LOG::Both name geocoding and address geocoding requests failed")
         return None
     
-    if response2.status_code != 200:
-        print("Fetch address found for: " + business_address + " failed")
+    resultJson = result.json()
+    if resultJson["status"] != 'OK':
+        print("LOG::Request status != OK")
         return None
+    else:
+      result_data = resultJson["results"][0]
+      location_from_result = Location(result_data['geometry']['location']['lng'], result_data['geometry']['location']['lat'])
+      print("LOG::Found a valid address")
+      return ValidAddress(result_data["place_id"], result_data['formatted_address'], location_from_result)
 
-    if response1.status_code == 200 and response2.status_code == 200:
-        # get long + lat for both address and name
-        responseJson = response1.json()
-        print(responseJson)
-        if responseJson['status'] != 'OK':
-            print("No address found for: " + business_name)
-            return None
-        # assume one result comes back for mvp
-        data_from_name = responseJson['results'][0]
-        location_from_name = Location(data_from_name['geometry']['location']['lng'], data_from_name['geometry']['location']['lat']) 
-        responseJson = response2.json()
-        if responseJson['status'] != 'OK':
-            print("No address found for: " + business_address)
-            return None
-        data_from_address = responseJson['results'][0]
-        location_from_address = Location(data_from_address['geometry']['location']['lng'], data_from_address['geometry']['location']['lat'])
-        if (name_and_address_matched(location_from_name, location_from_address)):
-            # if match, store to DB
-            return ValidAddress(data_from_name["place_id"], data_from_name['formatted_address'], location_from_name)
-        else:
-            return None
         
 def write_to_DB(sender, mid, businessName, verifiedAddress):
     dynamodb = boto3.client('dynamodb')
