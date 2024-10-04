@@ -5,6 +5,9 @@ import boto3
 from botocore.exceptions import ClientError
 import requests
 
+# increase parallelism
+# can do address verification in parallel
+# fifo queues with messageGroupId can ensure they come in order
 @dataclass
 class Location:
     lng: float
