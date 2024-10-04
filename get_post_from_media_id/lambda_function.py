@@ -11,6 +11,8 @@ import requests
 # key: post shortcode
 # value: List<PlaceId>
 
+# fix prompt next step
+
 def get_api_key(secret_name): 
     region_name = "us-east-1"
 
