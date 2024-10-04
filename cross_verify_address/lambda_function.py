@@ -63,12 +63,12 @@ def cross_verify_address(business_name, business_address) -> ValidAddress:
             data_from_address = addressResponseJson["results"]
             if len(data_from_name) != 0 and len(data_from_address) != 0:
                 if len(data_from_name) == 1 and len(data_from_address) == 1:
-                    location_from_name = Location(data_from_name['geometry']['location']['lng'], data_from_name['geometry']['location']['lat']) 
-                    location_from_address = Location(data_from_address['geometry']['location']['lng'], data_from_address['geometry']['location']['lat'])
+                    location_from_name = Location(data_from_name[0]['geometry']['location']['lng'], data_from_name[0]['geometry']['location']['lat']) 
+                    location_from_address = Location(data_from_address[0]['geometry']['location']['lng'], data_from_address[0]['geometry']['location']['lat'])
                     if (name_and_address_matched(location_from_name, location_from_address)):
                       # if match, store to DB
                       print("LOG::Name and address goecoding matched")
-                      return ValidAddress(data_from_name["place_id"], data_from_name['formatted_address'], location_from_name)
+                      return ValidAddress(data_from_name[0]["place_id"], data_from_name[0]['formatted_address'], location_from_name)
                     else:
                       print("LOG::Name and address geocoding mismatch")
                       return None
