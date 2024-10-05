@@ -51,7 +51,7 @@ def lambda_handler(event, context):
 
         placeQuery = "query=" + urllib.parse.quote(businessAddress) + "&query_place_id=" + placeId
         data = {
-            "recipient": {
+          "recipient": {
             "id": sender
           },
           "message": {
