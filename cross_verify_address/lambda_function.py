@@ -170,28 +170,21 @@ def lambda_handler(event, context):
         body = record["body"]
         print(body)
         bodyJson = json.loads(body)
-        businessAddresses = bodyJson["businessAddresses"]
-        businessNames = bodyJson["businessNames"]
+        businessAddress = bodyJson["businessAddress"]
+        businessName = bodyJson["businessName"]
         sender = bodyJson["sender"]
         mid = bodyJson["mid"]
 
-        placeIds = []
-        bAddresses = []
-        for i in range(len(businessAddresses)):
-            verified_address = cross_verify_address(business_name=businessNames[i], business_address=businessAddresses[i])
-            print("writing to db")
-            write_to_DB(sender, mid, businessNames[i] , verified_address)
-            if (verified_address):
-                placeIds.append(verified_address.placeId)
-                bAddresses.append(verified_address.address)
-
-        if len(placeIds) != 0:
+        verified_address = cross_verify_address(business_name=businessName, business_address=businessAddress)
+        print("writing to db")
+        write_to_DB(sender, mid, businessName, verified_address)
+        if (verified_address):
             message_body = {
               "sender": sender,
               # adding this to avoid sqs treating it as duplicate message
               "mid": mid,
-              "businessAddresses": bAddresses,
-              "placeIds": placeIds
+              "businessAddress": verified_address.address,
+              "placeId": verified_address.placeId
             }
             sqs.send_message(MessageGroupId=sender, QueueUrl=queue_url, MessageBody=json.dumps(message_body))       
             

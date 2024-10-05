@@ -45,22 +45,21 @@ def lambda_handler(event, context):
         body = record["body"]
         print(body)
         bodyJson = json.loads(body)
-        placeIds = bodyJson["placeIds"]
+        placeId = bodyJson["placeId"]
         sender = bodyJson["sender"]
-        businessAddresses = bodyJson["businessAddresses"]
+        businessAddress = bodyJson["businessAddress"]
 
-        for i in range(len(placeIds)):
-            placeQuery = "query=" + urllib.parse.quote(businessAddresses[i]) + "&query_place_id=" + placeIds[i]
-            data = {
-                "recipient": {
-                "id": sender
-              },
-              "message": {
-                "text": GOOGLE_URL_PREFIX + placeQuery
-              }
-            }
-            res = requests.post(SEND_MESSAGE_URL, headers=headers, json=data)
-            print(res.json())
+        placeQuery = "query=" + urllib.parse.quote(businessAddress) + "&query_place_id=" + placeId
+        data = {
+            "recipient": {
+            "id": sender
+          },
+          "message": {
+            "text": GOOGLE_URL_PREFIX + placeQuery
+          }
+        }
+        res = requests.post(SEND_MESSAGE_URL, headers=headers, json=data)
+        print(res.json())
 
 # https://developers.google.com/maps/documentation/places/web-service/op-overview#place_details_api
 # place details API

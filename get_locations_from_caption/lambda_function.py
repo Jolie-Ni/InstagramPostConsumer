@@ -100,12 +100,12 @@ def lambda_handler(event, context):
             print("Error: Addresses and Name length mismatched")
         else:
             # send to cross verify queue
-            messageBody = {
+            for i in range(len(addresses)):
+                messageBody = {
                             "mid": mid,
                             "sender": sender,
-                            "businessNames": businessNames,
-                            "businessAddresses": addresses
-                        }
-            
-            print("sending message" + json.dumps(messageBody))
-            sqs.send_message(QueueUrl=queue_url,MessageBody=json.dumps(messageBody),MessageGroupId=sender)
+                            "businessName": businessNames[i],
+                            "businessAddress": addresses[i]
+                }
+                print("sending message" + json.dumps(messageBody))
+                sqs.send_message(QueueUrl=queue_url,MessageBody=json.dumps(messageBody),MessageGroupId=sender)
