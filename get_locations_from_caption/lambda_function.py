@@ -97,7 +97,7 @@ def lambda_handler(event, context):
         print("sender: " + sender)
         print("caption: " + caption)
         addresses, businessNames = get_address(caption)
-        
+
         if len(addresses) != len(businessNames):
             print("Error: Addresses and Name length mismatched")
             message_body = {
@@ -111,7 +111,7 @@ def lambda_handler(event, context):
             # send to cross verify queue
             has_some_address = False
             for i in range(len(addresses)):
-                if addresses[i] != "N/A" or businessNames != "N/A":
+                if addresses[i] != "N/A" or businessNames[i] != "N/A":
                   messageBody = {
                              "mid": mid,
                               "sender": sender,
