@@ -106,6 +106,7 @@ def lambda_handler(event, context):
             }
 
             # short circuit here
+            print("sending message" + json.dumps(messageBody))
             sqs.send_message(QueueUrl=reply_queue_url,MessageBody=json.dumps(messageBody),MessageGroupId=sender)
         else:
             # send to cross verify queue
@@ -127,4 +128,5 @@ def lambda_handler(event, context):
                 "messageType": "error",
               }
               # short circuit here
+              print("sending message" + json.dumps(messageBody))
               sqs.send_message(MessageGroupId=sender, QueueUrl=reply_queue_url, MessageBody=json.dumps(message_body))  
