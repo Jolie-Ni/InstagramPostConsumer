@@ -97,16 +97,7 @@ def lambda_handler(event, context):
         print("sender: " + sender)
         print("caption: " + caption)
         addresses, businessNames = get_address(caption)
-
-        if len(addresses) == 0 or len(businessNames) == 0:
-            # send to error message queue
-            message_body = {
-              "sender": sender,
-              "messageType": "error",
-            }
-
-            # short circuit here
-            sqs.send_message(MessageGroupId=sender, QueueUrl=reply_queue_url, MessageBody=json.dumps(message_body))       
+        
         if len(addresses) != len(businessNames):
             print("Error: Addresses and Name length mismatched")
             message_body = {
@@ -118,12 +109,22 @@ def lambda_handler(event, context):
             sqs.send_message(QueueUrl=reply_queue_url,MessageBody=json.dumps(messageBody),MessageGroupId=sender)
         else:
             # send to cross verify queue
+            has_some_address = False
             for i in range(len(addresses)):
-                messageBody = {
-                            "mid": mid,
-                            "sender": sender,
-                            "businessName": businessNames[i],
-                            "businessAddress": addresses[i]
-                }
-                print("sending message" + json.dumps(messageBody))
-                sqs.send_message(QueueUrl=queue_url,MessageBody=json.dumps(messageBody),MessageGroupId=sender)
+                if addresses[i] != "N/A" or businessNames != "N/A":
+                  messageBody = {
+                             "mid": mid,
+                              "sender": sender,
+                              "businessName": businessNames[i],
+                              "businessAddress": addresses[i]
+                  }
+                  has_some_address = True
+                  print("sending message" + json.dumps(messageBody))
+                  sqs.send_message(QueueUrl=queue_url,MessageBody=json.dumps(messageBody),MessageGroupId=sender)
+            if has_some_address == False:
+              message_body = {
+                "sender": sender,
+                "messageType": "error",
+              }
+              # short circuit here
+              sqs.send_message(MessageGroupId=sender, QueueUrl=reply_queue_url, MessageBody=json.dumps(message_body))  
