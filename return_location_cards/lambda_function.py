@@ -48,12 +48,12 @@ def lambda_handler(event, context):
         # 2 cases
         type = bodyJson["messageType"]
         text = ""
+        sender = bodyJson["sender"]
         if type == "error":
            text = "Sorry, we are unable to parse out google map link/s from this post"
 
         else: 
           placeId = bodyJson["placeId"]
-          sender = bodyJson["sender"]
           businessAddress = bodyJson["businessAddress"]
           placeQuery = "query=" + urllib.parse.quote(businessAddress) + "&query_place_id=" + placeId
           text = GOOGLE_URL_PREFIX + placeQuery
