@@ -85,6 +85,7 @@ def lambda_handler(event, context):
     print(event)
     records = event["Records"]
     queue_url = "https://sqs.us-east-1.amazonaws.com/310780496713/google_map_decoding_api.fifo"
+    reply_queue_url = "https://sqs.us-east-1.amazonaws.com/310780496713/send_instagram_location_cards.fifo"
     sqs = boto3.client('sqs')
     for record in records:
         body = record["body"]
@@ -96,8 +97,25 @@ def lambda_handler(event, context):
         print("sender: " + sender)
         print("caption: " + caption)
         addresses, businessNames = get_address(caption)
+
+        if len(addresses) == 0 or len(businessNames) == 0:
+            # send to error message queue
+            message_body = {
+              "sender": sender,
+              "messageType": "error",
+            }
+
+            # short circuit here
+            sqs.send_message(MessageGroupId=sender, QueueUrl=reply_queue_url, MessageBody=json.dumps(message_body))       
         if len(addresses) != len(businessNames):
             print("Error: Addresses and Name length mismatched")
+            message_body = {
+              "sender": sender,
+              "messageType": "error",
+            }
+
+            # short circuit here
+            sqs.send_message(QueueUrl=reply_queue_url,MessageBody=json.dumps(messageBody),MessageGroupId=sender)
         else:
             # send to cross verify queue
             for i in range(len(addresses)):

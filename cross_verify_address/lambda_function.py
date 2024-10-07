@@ -181,6 +181,7 @@ def lambda_handler(event, context):
         if (verified_address):
             message_body = {
               "sender": sender,
+              "messageType": "url",
               # adding this to avoid sqs treating it as duplicate message
               "mid": mid,
               "businessAddress": verified_address.address,

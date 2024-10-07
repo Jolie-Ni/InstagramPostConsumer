@@ -45,19 +45,29 @@ def lambda_handler(event, context):
         body = record["body"]
         print(body)
         bodyJson = json.loads(body)
-        placeId = bodyJson["placeId"]
-        sender = bodyJson["sender"]
-        businessAddress = bodyJson["businessAddress"]
+        # 2 cases
+        type = bodyJson["messageType"]
+        text = ""
+        if type == "error":
+           text = "Sorry, we are unable to parse out google map link/s from this post"
 
-        placeQuery = "query=" + urllib.parse.quote(businessAddress) + "&query_place_id=" + placeId
+        else: 
+          placeId = bodyJson["placeId"]
+          sender = bodyJson["sender"]
+          businessAddress = bodyJson["businessAddress"]
+          placeQuery = "query=" + urllib.parse.quote(businessAddress) + "&query_place_id=" + placeId
+          text = GOOGLE_URL_PREFIX + placeQuery
+        
+        # error message
         data = {
           "recipient": {
             "id": sender
           },
           "message": {
-            "text": GOOGLE_URL_PREFIX + placeQuery
+            "text": text
           }
         }
+        
         res = requests.post(SEND_MESSAGE_URL, headers=headers, json=data)
         print(res.json())
 
