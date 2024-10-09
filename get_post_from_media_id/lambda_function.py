@@ -7,11 +7,7 @@ from botocore.exceptions import ClientError
 import re
 import requests
 
-# tune query so it pins the location on map
-# fix prompt next step
-# introduce redis cache
-# key: post shortcode
-# value: List<PlaceId>
+# introduce redis cache/in memory store
 
 def get_api_key(secret_name): 
     region_name = "us-east-1"
