@@ -8,7 +8,6 @@ import re
 import requests
 
 # introduce redis cache/in memory store
-
 def get_api_key(secret_name): 
     region_name = "us-east-1"
 
@@ -70,4 +69,3 @@ def lambda_handler(event, context):
         
         print("sending message" + json.dumps(message_body))
         sqs.send_message(QueueUrl=queue_url, MessageBody=json.dumps(message_body), MessageGroupId=sender)
-        
