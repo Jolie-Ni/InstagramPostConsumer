@@ -1,10 +1,7 @@
 from dataclasses import asdict, dataclass
-import time
-import shutil
 import json
 import boto3
 from botocore.exceptions import ClientError
-import re
 import requests
 
 # introduce redis cache/in memory store
