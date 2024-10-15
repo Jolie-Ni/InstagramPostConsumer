@@ -1,3 +1,4 @@
-![image](https://github.com/user-attachments/assets/c1f68cdc-932c-4ca2-88d0-927ad6557b46)
+![image](https://github.com/user-attachments/assets/1d7f9f14-bea8-4869-91c3-57a62ec59b58)
+
 
 Medium Article Place Holder
