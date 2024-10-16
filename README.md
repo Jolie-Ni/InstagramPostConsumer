@@ -4,4 +4,4 @@
 
 **Technical details on Medium:**
 
-https://medium.com/@ninan980805/behind-the-scenes-how-i-built-an-instagram-bot-that-automates-location-discovery-a479414d525c
+[Behind the scenes: How I built an instagram bot that automates location discovery](https://medium.com/@ninan980805/behind-the-scenes-how-i-built-an-instagram-bot-that-automates-location-discovery-a479414d525c)
